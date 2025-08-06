@@ -275,6 +275,7 @@
     EXTRA_LDFLAGS = "-L/lib -L${pkgs.pkgsCu.linuxPackages.nvidia_x11}/lib";
    # LD_LIBRARY_PATH = lib.mkForce "${pkgs.pkgsCu.linuxPackages.nvidia_x11}/lib:${pkgs.pkgsCu.ncurses5}/lib:${config.services.pipewire.package.jack}/lib";
     EXTRA_CCFLAGS = "-I/usr/include";
+    EDITOR = "${pkgs.vim}/bin/vim"; # Set vim as default editor
   };
 
   # Garbage Collector
