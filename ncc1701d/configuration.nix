@@ -175,7 +175,11 @@
     pkgs.python3
     (pkgs.pkgsCu.mathematica-cuda.override {version = "14.2.1";})
     pkgs.pkgsCu.cudatoolkit
+    pkgs.pkgsCu.cudaPackages.cudnn
     pkgs.mlocate
+    pkgs.alvr
+    pkgs.steam
+    # pkgs.nix-alien
     #pkgs.hdf5
     #pkgs.hdf4
     #pkgs.hdfview
@@ -183,6 +187,20 @@
   ];
 
   programs.git.enable = true;
+
+  # Nix-ld (run dynamically linked binaries)
+  programs.nix-ld.enable = true; 
+  programs.nix-ld.libraries =
+    with pkgs;
+    [
+      fuse
+      xorg.libXi
+      wayland
+      alsa-lib
+      openblas
+      glib
+    ]
+    ++ (appimageTools.defaultFhsEnvArgs.targetPkgs pkgs);
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -244,6 +262,27 @@
     # Make sure to use the correct Bus ID values for your system!
     nvidiaBusId = "PCI:1:0:0";
     intelBusId = "PCI:0:2:0";
+  };
+
+  # CUDA
+  systemd.services.nvidia-control-devices = {
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig.ExecStart = "${pkgs.pkgsCu.linuxPackages.nvidia_x11.bin}/bin/nvidia-smi";
+  };
+  environment.sessionVariables = rec {
+    CUDA_PATH = "${pkgs.pkgsCu.cudatoolkit}";
+    CUDA_TOOLKIT_ROOT_DIR = "${pkgs.pkgsCu.cudatoolkit}";
+    EXTRA_LDFLAGS = "-L/lib -L${pkgs.pkgsCu.linuxPackages.nvidia_x11}/lib";
+   # LD_LIBRARY_PATH = lib.mkForce "${pkgs.pkgsCu.linuxPackages.nvidia_x11}/lib:${pkgs.pkgsCu.ncurses5}/lib:${config.services.pipewire.package.jack}/lib";
+    EXTRA_CCFLAGS = "-I/usr/include";
+  };
+
+  # Garbage Collector
+  nix.settings.auto-optimise-store = true;
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "-d --delete-older-than 30d";
   };
 
   # This value determines the NixOS release from which the default
