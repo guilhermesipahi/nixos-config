@@ -128,6 +128,8 @@
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
+  #nixpkgs.config.cudaSupport = true; # Enable CUDA for full system
+
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = [
@@ -135,52 +137,75 @@
     pkgs.kdePackages.okular
     pkgs.htop
     pkgs.nvtopPackages.full
-    pkgs.texliveFull
-    pkgs.texstudio
-    pkgs.lyx
-    pkgs.google-chrome
-    pkgs.octaveFull
-    pkgs.gnome-tweaks
+    pkgs.whitesur-gtk-theme
+    pkgs.gnome-control-center
     pkgs.gnomeExtensions.dash-to-dock
-    pkgs.telegram-desktop
-    pkgs.fortran-fpm
-    pkgs.vlc
-    pkgs.gimp3-with-plugins
-    pkgs.imagemagick
-    pkgs.inkscape-with-extensions
-    pkgs.mplayer
-    pkgs.tesseract4
-    pkgs.h5utils
+    pkgs.gnomeExtensions.notification-position
+    pkgs.gnome-tweaks
+    pkgs.findutils
+    pkgs.gnome-terminal
+    pkgs.findutils.locate
+    pkgs.alvr
+    pkgs.fuse
+    # Text editors and stuff
+    pkgs.gedit
     pkgs.libreoffice-qt
-    pkgs.pdftk
-    pkgs.spotify
     pkgs.hunspell
     pkgs.hunspellDicts.pt_BR
     pkgs.aspell
     pkgs.aspellDicts.pt_BR
+    pkgs.tesseract4
+    pkgs.kdePackages.phonon-vlc
+    # TeX & LaTeX
+    pkgs.texliveFull
+    pkgs.texstudio
+    pkgs.lyx
+    pkgs.jabref
+    # Browsers
+    pkgs.google-chrome
+    # Players
+    pkgs.vlc
+    pkgs.mplayer
+    pkgs.spotify
+    pkgs.telegram-desktop
+    # Images
     pkgs.gimp3-with-plugins
+    pkgs.imagemagick
+    pkgs.inkscape-with-extensions
+    pkgs.blender
+    pkgs.pdftk
     pkgs.obs-studio
-    pkgs.fftw
+    pkgs.openboard
+    # Compilers, Interpreters & Libs
     pkgs.gcc
     pkgs.gfortran
-    pkgs.gnuplot
-    pkgs.gap
-    pkgs.whitesur-gtk-theme
-    pkgs.gnome-control-center
-    pkgs.gedit
-    pkgs.findutils
-    pkgs.gnome-terminal
-    pkgs.unityhub
-    pkgs.jabref
+    pkgs.fortran-fpm
+    pkgs.blas
+    pkgs.lapack
+    pkgs.fftw
+    pkgs.h5utils
     pkgs.python3
-    (pkgs.pkgsCu.mathematica-cuda.override {version = "14.2.1";})
-    pkgs.pkgsCu.cudatoolkit
-    pkgs.pkgsCu.cudaPackages.cudnn
-    pkgs.mlocate
-    pkgs.alvr
+    pkgs.julia-bin
+    # Scientific Apps
+    pkgs.gnuplot
+    pkgs.octaveFull
+    pkgs.scilab-bin
+    pkgs.maxima
+    pkgs.wxmaxima
+    pkgs.gap
+    # Cuda
+    (pkgs.mathematica-cuda.override {version = "14.2.1";})
+    #(pkgs.pkgsCu.mathematica-cuda.override {version = "14.2.1";})
+    #pkgs.pkgsCu.cudatoolkit
+    #pkgs.pkgsCu.cudaPackages.cudnn
+    # Games
     pkgs.steam
+    pkgs.godot
+    pkgs.unityhub
     # pkgs.nix-alien
-    #pkgs.hdf5
+    pkgs.hdf5
+    pkgs.hdf5-cpp
+    pkgs.pkg-config
     #pkgs.hdf4
     #pkgs.hdfview
   #  pkgs.wget
@@ -220,9 +245,20 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
-  
+
+  # VirtualBox
+  virtualisation.virtualbox.host.enable = true;
+  users.extraGroups.vboxusers.members = [ "sipahi" ];
+  virtualisation.virtualbox.host.enableExtensionPack = true;
+  virtualisation.virtualbox.host.enableKvm = true; # Use KVM
+  virtualisation.virtualbox.host.enableHardening = false;
+  virtualisation.virtualbox.host.addNetworkInterface = false; # Needed for KVM Vbox
+
+  #Virtualization Docker
+  virtualisation.docker.enable = true;
   # Nvidia
   hardware.graphics.enable = true;
+  hardware.graphics.enable32Bit = true;
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.nvidia = {
 
@@ -264,19 +300,21 @@
     intelBusId = "PCI:0:2:0";
   };
 
-  # CUDA
-  systemd.services.nvidia-control-devices = {
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig.ExecStart = "${pkgs.pkgsCu.linuxPackages.nvidia_x11.bin}/bin/nvidia-smi";
-  };
-  environment.sessionVariables = rec {
-    CUDA_PATH = "${pkgs.pkgsCu.cudatoolkit}";
-    CUDA_TOOLKIT_ROOT_DIR = "${pkgs.pkgsCu.cudatoolkit}";
-    EXTRA_LDFLAGS = "-L/lib -L${pkgs.pkgsCu.linuxPackages.nvidia_x11}/lib";
-   # LD_LIBRARY_PATH = lib.mkForce "${pkgs.pkgsCu.linuxPackages.nvidia_x11}/lib:${pkgs.pkgsCu.ncurses5}/lib:${config.services.pipewire.package.jack}/lib";
-    EXTRA_CCFLAGS = "-I/usr/include";
-    EDITOR = "${pkgs.vim}/bin/vim"; # Set vim as default editor
-  };
+  ## CUDA
+  #systemd.services.nvidia-control-devices = {
+  #  wantedBy = [ "multi-user.target" ];
+  #  serviceConfig.ExecStart = "${pkgs.pkgsCu.linuxPackages.nvidia_x11.bin}/bin/nvidia-smi";
+  #};
+  #environment.sessionVariables = rec {
+  #  CUDA_PATH = "${pkgs.pkgsCu.cudatoolkit}";
+  #  CUDA_TOOLKIT_ROOT_DIR = "${pkgs.pkgsCu.cudatoolkit}";
+  #  EXTRA_LDFLAGS = "-L/lib -L${pkgs.pkgsCu.linuxPackages.nvidia_x11}/lib";
+  #  NVIDIA_DRIVER_LIBRARY_PATH = "${pkgs.pkgsCu.cudatoolkit}";
+  #  CUDA_LIBRARY_PATH = "${pkgs.pkgsCu.cudatoolkit}";
+  # # LD_LIBRARY_PATH = lib.mkForce "${pkgs.pkgsCu.linuxPackages.nvidia_x11}/lib:${pkgs.pkgsCu.ncurses5}/lib:${config.services.pipewire.package.jack}/lib";
+  #  EXTRA_CCFLAGS = "-I/usr/include";
+  #  EDITOR = "${pkgs.vim}/bin/vim"; # Set vim as default editor
+  #};
 
   # Garbage Collector
   nix.settings.auto-optimise-store = true;
