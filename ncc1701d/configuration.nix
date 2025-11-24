@@ -209,6 +209,12 @@
     #pkgs.hdf4
     #pkgs.hdfview
   #  pkgs.wget
+    pkgs.openconnect
+    pkgs.networkmanager-openconnect
+    pkgs.wineWowPackages.stable
+    pkgs.winetricks
+    pkgs.zoom-us
+    pkgs.ruby
   ];
 
   programs.git.enable = true;
