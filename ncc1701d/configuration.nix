@@ -215,6 +215,10 @@
     pkgs.winetricks
     pkgs.zoom-us
     pkgs.ruby
+    pkgs.scribus
+    pkgs.ghostscript
+    pkgs.pdftricks
+    pkgs.densify
   ];
 
   programs.git.enable = true;
