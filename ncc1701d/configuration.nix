@@ -78,8 +78,8 @@
   services.xserver.enable = true;
 
   # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  services.displayManager.gdm.enable = true;
+  services.desktopManager.gnome.enable = true;
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -140,7 +140,7 @@
     pkgs.whitesur-gtk-theme
     pkgs.gnome-control-center
     pkgs.gnomeExtensions.dash-to-dock
-    pkgs.gnomeExtensions.notification-position
+    #pkgs.gnomeExtensions.notification-position
     pkgs.gnome-tweaks
     pkgs.findutils
     pkgs.gnome-terminal
@@ -160,7 +160,7 @@
     pkgs.texliveFull
     pkgs.texstudio
     pkgs.lyx
-    pkgs.jabref
+    #pkgs.jabref
     # Browsers
     pkgs.google-chrome
     # Players
@@ -194,7 +194,7 @@
     pkgs.wxmaxima
     pkgs.gap
     # Cuda
-    (pkgs.mathematica-cuda.override {version = "14.2.1";})
+    (pkgs.mathematica-cuda.override {version = "14.3.0";})
     #(pkgs.pkgsCu.mathematica-cuda.override {version = "14.2.1";})
     #pkgs.pkgsCu.cudatoolkit
     #pkgs.pkgsCu.cudaPackages.cudnn
@@ -224,6 +224,9 @@
   ];
 
   programs.git.enable = true;
+  
+  #to use git with vim editor
+  environment.variables={EDITOR=(lib.getExe pkgs.vim); };
 
   # Nix-ld (run dynamically linked binaries)
   programs.nix-ld.enable = true; 
