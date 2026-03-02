@@ -219,6 +219,8 @@
     pkgs.ghostscript
     pkgs.pdftricks
     pkgs.densify
+    pkgs.clamav
+    pkgs.uv
   ];
 
   programs.git.enable = true;
