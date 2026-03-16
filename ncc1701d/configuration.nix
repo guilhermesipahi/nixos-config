@@ -272,9 +272,22 @@
   #Virtualization Docker
   virtualisation.docker.enable = true;
   # Nvidia
+  boot.kernelParams = [ 
+      "mem_sleep_default=s2idle"
+      "nvidia.NVreg_PreserveVideoMemoryAllocations=1" 
+      "nvidia.NVreg_TemporaryFilePath=/var/tmp" 
+    ];
+  systemd.sleep.extraConfig = ''
+    AllowSuspend=yes
+    AllowHibernation=yes
+    AllowHybridSleep=no
+    AllowSuspendThenHibernate=no
+  '';
+
   hardware.graphics.enable = true;
   hardware.graphics.enable32Bit = true;
   services.xserver.videoDrivers = [ "nvidia" ];
+  powerManagement.enable = true;
   hardware.nvidia = {
 
     # Modesetting is required.
@@ -284,11 +297,11 @@
     # Enable this if you have graphical corruption issues or application crashes after waking
     # up from sleep. This fixes it by saving the entire VRAM memory to /tmp/ instead 
     # of just the bare essentials.
-    powerManagement.enable = false;
+    powerManagement.enable = true;
 
     # Fine-grained power management. Turns off GPU when not in use.
     # Experimental and only works on modern Nvidia GPUs (Turing or newer).
-    powerManagement.finegrained = false;
+    powerManagement.finegrained = true;
 
     # Use the NVidia open source kernel module (not to be confused with the
     # independent third-party "nouveau" open source driver).
@@ -309,6 +322,11 @@
 
   hardware.nvidia.prime = {
     #sync.enable = true;
+
+    offload = {
+      enable = true; # REQUIRED for finegrained
+      #enableOffloadCmd = true;
+    };
     
     # Make sure to use the correct Bus ID values for your system!
     nvidiaBusId = "PCI:1:0:0";
