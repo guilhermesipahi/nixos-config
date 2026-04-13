@@ -112,6 +112,8 @@
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
+
+  services.flatpak.enable = true;
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.sipahi = {
     isNormalUser = true;
@@ -133,7 +135,7 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = [
-    pkgs.vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    pkgs.vim-full # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     pkgs.kdePackages.okular
     pkgs.htop
     pkgs.nvtopPackages.full
@@ -221,24 +223,113 @@
     pkgs.densify
     pkgs.clamav
     pkgs.uv
+    #pkgs.xppen_4
+    pkgs.opentabletdriver
+    pkgs.flatpak
+    pkgs.styluslabs-write
+    pkgs.xournalpp
+    pkgs.libxcb
+    pkgs.coreutils
+    pkgs.steam-run
+    pkgs.pcre
+    pkgs.pcre2
+    pkgs.jpcre2
+    pkgs.haskellPackages.pcre2
+    pkgs.libGL
+    pkgs.nspr
+    #pkgs.libxcb-image
+    #pkgs.xcb-util-image
+    #pkgs.python313Packages.conda
+    #pkgs.python313Packages.pcre2-py
+    pkgs.conda
+    pkgs.opencode
+    pkgs.vtk-full
+    #pkgs.freetype
+    (pkgs.writeShellScriptBin "python" ''
+      export LD_LIBRARY_PATH=$NIX_LD_LIBRARY_PATH
+      exec ${pkgs.python3}/bin/python "$@"
+    '')
   ];
 
   programs.git.enable = true;
-  
+  #environment.systemPackages = with pkgs; [
+  #  coreutils  # Includes shred
+  #  pcre2      # Includes libpcre2
+  #];
+ 
+
+ 
   #to use git with vim editor
   environment.variables={EDITOR=(lib.getExe pkgs.vim); };
 
   # Nix-ld (run dynamically linked binaries)
   programs.nix-ld.enable = true; 
+  #programs.nix-ld = {
+  #  enable = true;
+  #  libraries = with pkgs; [
+  #    zlib zstd stdenv.cc.cc curl openssl attr libssh bzip2 libxml2 acl libsodium util-linux xz systemd
+  #  ];
+  #};
+  
+
   programs.nix-ld.libraries =
     with pkgs;
     [
       fuse
       xorg.libXi
+      xorg.libX11
+      xorg.xcbutilwm
+      xorg.xrandr
+      libxcb
+      libxcb-wm
+      libxcb-image
+      libxcb-util
+      libxcb-keysyms
+      libxcb-cursor
+      libxcb-errors
+      libxcb-render-util
+      libxext
+      libsm
+      libice
+      libxkbcommon
+      libGL
+      libpulseaudio
       wayland
       alsa-lib
       openblas
       glib
+      zlib 
+      zstd 
+      stdenv.cc.cc 
+      curl 
+      openssl 
+      attr 
+      libssh 
+      bzip2 
+      libxml2 
+      acl 
+      libsodium #ibxcb-wm
+      util-linux 
+      xz 
+      systemd
+      pcre2
+      nspr
+      nss
+      libxcomposite
+      libxdamage
+      libxfixes
+      libxrender
+      libxrandr
+      freetype
+      expat
+      fontconfig
+      libxcursor
+      libxtst
+      dbus
+      libGLU
+      libpng
+      libxcb-wm
+      xiccd
     ]
     ++ (appimageTools.defaultFhsEnvArgs.targetPkgs pkgs);
 
