@@ -10,12 +10,12 @@
       ./hardware-configuration.nix
     ];
 
-  nixpkgs.overlays = [
-    (final: prev: {
-      pkgsCu = import inputs.nixpkgs {  config.allowUnfree = true;  localSystem.system = final.stdenv.hostPlatform.system; localSystem.config = "${pkgs.hostPlatform.linuxArch}-unknown-linux-gnu"; config.cudaSupport = true; config.cudaVersion = "12";}; 
-     }
-    )
-  ];
+  #nixpkgs.overlays = [
+  #  (final: prev: {
+  #    pkgsCu = import inputs.nixpkgs {  config.allowUnfree = true;  localSystem.system = final.stdenv.hostPlatform.system; localSystem.config = "${pkgs.hostPlatform.linuxArch}-unknown-linux-gnu"; config.cudaSupport = true; config.cudaVersion = "12";}; 
+  #   }
+  #  )
+  #];
 
   # Bootloader.
   # boot.loader.systemd-boot.enable = true;
@@ -213,7 +213,7 @@
   #  pkgs.wget
     pkgs.openconnect
     pkgs.networkmanager-openconnect
-    pkgs.wineWowPackages.stable
+    pkgs.wineWow64Packages.stable
     pkgs.winetricks
     pkgs.zoom-us
     pkgs.ruby
@@ -237,18 +237,71 @@
     pkgs.haskellPackages.pcre2
     pkgs.libGL
     pkgs.nspr
-    #pkgs.libxcb-image
-    #pkgs.xcb-util-image
-    #pkgs.python313Packages.conda
-    #pkgs.python313Packages.pcre2-py
     pkgs.conda
     pkgs.opencode
+    pkgs.ffmpeg
+    pkgs.nload
     pkgs.vtk-full
-    #pkgs.freetype
     (pkgs.writeShellScriptBin "python" ''
       export LD_LIBRARY_PATH=$NIX_LD_LIBRARY_PATH
       exec ${pkgs.python3}/bin/python "$@"
     '')
+    pkgs.ffmpeg
+    pkgs.fmt.dev
+    pkgs.git
+    pkgs.gitRepo
+    pkgs.freeglut
+    pkgs.ncurses
+    pkgs.gperf
+    pkgs.curl
+    pkgs.autoconf
+    pkgs.gnupg
+    pkgs.procps
+    pkgs.gnumake
+    pkgs.util-linux
+    pkgs.m4
+    pkgs.unzip
+    pkgs.binutils
+    pkgs.uv
+    pkgs.linuxPackages.nvidiaPackages.stable
+    pkgs.cudaPackages.cudatoolkit
+    pkgs.cudaPackages.cudnn
+    #pkgs.cudaPackages.cutensor # Optional
+    pkgs.cudaPackages.cuda_demo_suite
+    pkgs.cudaPackages.cuda-samples
+    pkgs.cudaPackages.cuda_cudart
+    pkgs.cudaPackages.cuda_documentation
+    pkgs.cudaPackages.cuda_gdb
+    pkgs.cudaPackages.cuda_nvcc
+    pkgs.cudaPackages.cuda_nvprof
+    pkgs.cudaPackages.cuda_sanitizer_api
+    pkgs.cudaPackages.cutlass
+    pkgs.cudaPackages.libcublas
+    pkgs.cudaPackages.libcublasmp
+    pkgs.cudaPackages.libcudss
+    pkgs.cudaPackages.libcufft
+    pkgs.cudaPackages.libcusolver
+    pkgs.cudaPackages.libcusolvermp
+    pkgs.cudaPackages.libcusparse
+    pkgs.cudaPackages.libcusparse_lt
+    pkgs.cudaPackages.libnpp
+    #pkgs.cudaPackages.nvpl_lapack
+    #pkgs.cudaPackages.nvpl_sparse
+    pkgs.mangohud
+    pkgs.goverlay
+    pkgs.qpdf
+    pkgs.pdfarranger
+    pkgs.openfortivpn
+    pkgs.openfortivpn-webview
+    pkgs.antigravity
+    pkgs.drawy
+    pkgs.drawio
+    pkgs.alchemy
+    pkgs.krita
+    pkgs.rnote
+    pkgs.noteshrink
+    pkgs.styluslabs-write
+    pkgs.gsettings-desktop-schemas
   ];
 
   programs.git.enable = true;
@@ -276,10 +329,13 @@
     with pkgs;
     [
       fuse
-      xorg.libXi
-      xorg.libX11
-      xorg.xcbutilwm
-      xorg.xrandr
+      libXi
+      libXmu
+      libX11
+      libXext
+      libXv
+      xcbutilwm
+      xrandr
       libxcb
       libxcb-wm
       libxcb-image
@@ -300,7 +356,8 @@
       glib
       zlib 
       zstd 
-      stdenv.cc.cc 
+      stdenv.cc 
+      #stdenv.cc.cc 
       curl 
       openssl 
       attr 
@@ -308,7 +365,7 @@
       bzip2 
       libxml2 
       acl 
-      libsodium #ibxcb-wm
+      libsodium
       util-linux 
       xz 
       systemd
@@ -368,12 +425,12 @@
       "nvidia.NVreg_PreserveVideoMemoryAllocations=1" 
       "nvidia.NVreg_TemporaryFilePath=/var/tmp" 
     ];
-  systemd.sleep.extraConfig = ''
-    AllowSuspend=yes
-    AllowHibernation=yes
-    AllowHybridSleep=no
-    AllowSuspendThenHibernate=no
-  '';
+  systemd.sleep.settings.Sleep = {
+    AllowSuspend = "yes";
+    AllowHibernation = "yes";
+    AllowHybridSleep = "no";
+    AllowSuspendThenHibernate = "no";
+    };
 
   hardware.graphics.enable = true;
   hardware.graphics.enable32Bit = true;
@@ -424,6 +481,15 @@
     intelBusId = "PCI:0:2:0";
   };
 
+  # Enable CUDA
+  nixpkgs.config.cudaSupport = true;
+  #environment.systemPackages = with pkgs; [
+  #  cudaPackages.cudatoolkit
+  #  cudaPackages.cudnn
+  #  cudaPackages.cutensor # Optional
+  #  cudaPackages.cuda_demo_suite
+  #];
+
   ## CUDA
   #systemd.services.nvidia-control-devices = {
   #  wantedBy = [ "multi-user.target" ];
@@ -446,6 +512,16 @@
     automatic = true;
     dates = "weekly";
     options = "-d --delete-older-than 30d";
+  };
+
+
+  nix.settings = {
+    substituters = [
+      "https://cache.nixos-cuda.org"
+    ];
+    trusted-public-keys = [
+      "cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M="
+    ];
   };
 
   # This value determines the NixOS release from which the default
